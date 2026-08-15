@@ -1,283 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>CandleAI</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: #080b12;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-    }
-
-    .app {
-      max-width: 500px;
-      min-height: 100vh;
-      margin: auto;
-      padding: 24px 18px;
-    }
-
-    .logo {
-      text-align: center;
-      margin-top: 15px;
-      margin-bottom: 35px;
-    }
-
-    .logo h1 {
-      margin: 0;
-      font-size: 32px;
-      letter-spacing: 1px;
-    }
-
-    .logo span {
-      color: #00e676;
-    }
-
-    .logo p {
-      color: #7f899b;
-      margin-top: 8px;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 14px;
-    }
-
-    .time-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 25px;
-    }
-
-    .time-btn {
-      background: #111722;
-      color: #ffffff;
-      border: 1px solid #202a3a;
-      border-radius: 12px;
-      padding: 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .time-btn.active {
-      background: #00e676;
-      color: #07100b;
-      border-color: #00e676;
-      font-weight: bold;
-    }
-
-    .upload {
-      border: 2px dashed #293449;
-      border-radius: 18px;
-      padding: 35px 15px;
-      text-align: center;
-      background: #0d121c;
-      cursor: pointer;
-    }
-
-    .upload-icon {
-      font-size: 42px;
-      margin-bottom: 10px;
-    }
-
-    .upload p {
-      color: #8c96a8;
-      margin: 8px 0;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    #preview {
-      display: none;
-      width: 100%;
-      max-height: 300px;
-      object-fit: contain;
-      margin-top: 20px;
-      border-radius: 12px;
-    }
-
-    .analyze {
-      width: 100%;
-      margin-top: 20px;
-      padding: 17px;
-      border: none;
-      border-radius: 13px;
-      background: #00e676;
-      color: #06100a;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .result {
-      display: none;
-      margin-top: 25px;
-      background: #111722;
-      border-radius: 18px;
-      padding: 22px;
-      text-align: center;
-    }
-
-    .signal {
-      font-size: 30px;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-
-    .up {
-      color: #00e676;
-    }
-
-    .down {
-      color: #ff4d67;
-    }
-
-    .confidence {
-      color: #9ca6b8;
-    }
-  </style>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+<main class="app">
+  <header>
+    <div>
+      <div class="eyebrow">AI АНАЛИЗ ГРАФИКОВ</div>
+      <h1>CandleAI</h1>
+      <p>Анализ скриншота графика</p>
+    </div>
+    <span id="status" class="status">Готов</span>
+  </header>
 
-<div class="app">
+  <section class="card">
+    <h2>Выберите время прогноза</h2>
+    <div id="timeframes" class="timeframes">
+      <button data-tf="30s">30 сек</button>
+      <button data-tf="1m">1 мин</button>
+      <button data-tf="2m">2 мин</button>
+      <button data-tf="3m">3 мин</button>
+      <button data-tf="4m">4 мин</button>
+      <button data-tf="5m">5 мин</button>
+      <button data-tf="10m">10 мин</button>
+      <button data-tf="15m">15 мин</button>
+      <button data-tf="20m">20 мин</button>
+    </div>
+  </section>
 
-  <div class="logo">
-    <h1>Candle<span>AI</span></h1>
-    <p>AI анализ графиков</p>
-  </div>
+  <section class="card">
+    <h2>Загрузите график</h2>
+    <label class="upload">
+      <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp">
+      <span class="plus">＋</span>
+      <b>Нажмите, чтобы выбрать скриншот</b>
+      <small>PNG, JPG или WEBP</small>
+    </label>
+    <img id="preview" class="preview hidden" alt="Предпросмотр">
+  </section>
 
-  <div class="title">
-    ⏱ Выберите время прогноза
-  </div>
+  <button id="analyzeBtn" class="analyze" disabled>Анализировать график</button>
 
-  <div class="time-grid">
-    <button class="time-btn active" onclick="selectTime(this, '30 секунд')">
-      30 сек
-    </button>
+  <section id="result" class="result card hidden">
+    <div class="result-head">
+      <span id="signalBadge">СИГНАЛ</span>
+      <span id="resultTf"></span>
+    </div>
+    <div id="direction" class="direction">—</div>
+    <div class="confidence">Уверенность модели: <strong id="confidence">—</strong></div>
 
-    <button class="time-btn" onclick="selectTime(this, '1 минута')">
-      1 мин
-    </button>
-
-    <button class="time-btn" onclick="selectTime(this, '2 минуты')">
-      2 мин
-    </button>
-
-    <button class="time-btn" onclick="selectTime(this, '3 минуты')">
-      3 мин
-    </button>
-
-    <button class="time-btn" onclick="selectTime(this, '5 минут')">
-      5 мин
-    </button>
-
-    <button class="time-btn" onclick="selectTime(this, '10 минут')">
-      10 мин
-    </button>
-  </div>
-
-  <div class="title">
-    📸 Загрузите график
-  </div>
-
-  <label class="upload">
-    <div class="upload-icon">📊</div>
-
-    <strong>Нажмите, чтобы выбрать скриншот</strong>
-
-    <p>PNG, JPG или WEBP</p>
-
-    <input
-      type="file"
-      id="fileInput"
-      accept="image/png,image/jpeg,image/webp"
-      onchange="showImage(event)"
-    >
-  </label>
-
-  <img id="preview">
-
-  <button class="analyze" onclick="analyze()">
-    🔍 Анализировать график
-  </button>
-
-  <div class="result" id="result">
-
-    <div>Результат анализа</div>
-
-    <div class="signal up" id="signal">
-      🟢 ВВЕРХ
+    <div class="metrics">
+      <div><span>Тренд</span><b id="trend">—</b></div>
+      <div><span>Импульс</span><b id="momentum">—</b></div>
+      <div><span>Сетап</span><b id="setup">—</b></div>
     </div>
 
-    <div class="confidence">
-      Уверенность: <strong id="confidence">78%</strong>
-    </div>
+    <div class="reason" id="reason">—</div>
+    <div class="warning">AI-анализ не гарантирует движение рынка. Это не финансовая рекомендация.</div>
+  </section>
 
-    <p id="period">
-      Прогноз: 30 секунд
-    </p>
-
-  </div>
-
-</div>
-
-<script>
-
-  let selectedTime = "30 секунд";
-
-  function selectTime(button, time) {
-
-    document.querySelectorAll(".time-btn").forEach(btn => {
-      btn.classList.remove("active");
-    });
-
-    button.classList.add("active");
-
-    selectedTime = time;
-  }
-
-  function showImage(event) {
-
-    const file = event.target.files[0];
-
-    if (!file) return;
-
-    const preview = document.getElementById("preview");
-
-    preview.src = URL.createObjectURL(file);
-
-    preview.style.display = "block";
-  }
-
-  function analyze() {
-
-    const file = document.getElementById("fileInput").files[0];
-
-    if (!file) {
-      alert("Сначала загрузите график");
-      return;
-    }
-
-    document.getElementById("result").style.display = "block";
-
-    document.getElementById("period").innerText =
-      "Прогноз: " + selectedTime;
-
-  }
-
-</script>
-
+  <section class="card">
+    <h2>История</h2>
+    <div id="history" class="history-empty">Пока нет сигналов</div>
+  </section>
+</main>
+<script src="app.js"></script>
 </body>
 </html>
