@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CandleAI</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <header>
+    <div>
+      <div class="eyebrow">AI АНАЛИЗ ГРАФИКОВ</div>
+      <h1>CandleAI</h1>
+      <p>Анализ скриншота графика</p>
+    </div>
+    <span id="status" class="status">Готов</span>
+  </header>
+
+  <section class="card">
+    <h2>Выберите время прогноза</h2>
+    <div id="timeframes" class="timeframes">
+      <button data-tf="30s">30 сек</button>
+      <button data-tf="1m">1 мин</button>
+      <button data-tf="2m">2 мин</button>
+      <button data-tf="3m">3 мин</button>
+      <button data-tf="4m">4 мин</button>
+      <button data-tf="5m">5 мин</button>
+      <button data-tf="10m">10 мин</button>
+      <button data-tf="15m">15 мин</button>
+      <button data-tf="20m">20 мин</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Загрузите график</h2>
+    <label class="upload">
+      <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp">
+      <span class="plus">＋</span>
+      <b>Нажмите, чтобы выбрать скриншот</b>
+      <small>PNG, JPG или WEBP</small>
+    </label>
+    <img id="preview" class="preview hidden" alt="Предпросмотр">
+  </section>
+
+  <button id="analyzeBtn" class="analyze" disabled>Анализировать график</button>
+
+  <section id="result" class="result card hidden">
+    <div class="result-head">
+      <span id="signalBadge">СИГНАЛ</span>
+      <span id="resultTf"></span>
+    </div>
+    <div id="direction" class="direction">—</div>
+    <div class="confidence">Уверенность модели: <strong id="confidence">—</strong></div>
+
+    <div class="metrics">
+      <div><span>Тренд</span><b id="trend">—</b></div>
+      <div><span>Импульс</span><b id="momentum">—</b></div>
+      <div><span>Сетап</span><b id="setup">—</b></div>
+    </div>
+
+    <div class="reason" id="reason">—</div>
+    <div class="warning">AI-анализ не гарантирует движение рынка. Это не финансовая рекомендация.</div>
+  </section>
+
+  <section class="card">
+    <h2>История</h2>
+    <div id="history" class="history-empty">Пока нет сигналов</div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
