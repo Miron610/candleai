@@ -37,7 +37,6 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: "Неверный таймфрейм" });
   }
 
-  // Ограничение размера входа на стороне приложения.
   if (image.length > 8_000_000) {
     return res.status(413).json({ error: "Скриншот слишком большой" });
   }
@@ -56,10 +55,7 @@ module.exports = async (req, res) => {
 - качество сетапа.
 
 Не выдумывай значения, которых не видно.
-Не утверждай, что результат гарантирован.
 Если изображение нечёткое, график обрезан, свечей недостаточно или ситуация неоднозначна — используй NO_SIGNAL.
-
-ВАЖНО: signal — это аналитическая классификация изображения, а не обещание прибыли.
 
 Верни ТОЛЬКО валидный JSON без markdown:
 {
@@ -70,28 +66,31 @@ module.exports = async (req, res) => {
   "setup_quality": "good" | "medium" | "weak" | "unclear",
   "reason": "краткое объяснение на русском, 1-3 предложения"
 }
-
-Если signal = NO_SIGNAL, confidence должен быть не выше 55.
-Не подгоняй confidence под желаемый результат.
 `;
 
   try {
-    const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-5",
-        input: [{
-          role: "user",
-          content: [
-            { type: "input_text", text: `${systemPrompt}\nВыбранный горизонт: ${TIMEFRAMES[timeframe]}. Проанализируй изображение.` },
-            { type: "input_image", image_url: image, detail: "high" }
-          ]
+        model: process.env.OPENAI_MODEL || "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `Выбранный горизонт: ${TIMEFRAMES[timeframe]}. Проанализируй изображение.` },
+              { type: "image_url", image_url: { url: image, detail: "high" } }
+            ]
+          }
         ],
-        max_output_tokens: 500
+        max_tokens: 500
       })
     });
 
@@ -102,7 +101,7 @@ module.exports = async (req, res) => {
       return res.status(openaiResponse.status).json({ error: msg });
     }
 
-    const text = payload.output_text || "";
+    const text = payload.choices?.[0]?.message?.content || "";
     const parsed = cleanJson(text);
 
     if (!["UP", "DOWN", "NO_SIGNAL"].includes(parsed.signal)) {
